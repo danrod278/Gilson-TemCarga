@@ -14,7 +14,7 @@ class Conversa {
     contarTempo() {
         this.interval = setTimeout(() => {
             this.enviarParaServidor();
-        }, 1000 * 60 * 2);
+        }, 1000 * 10);
     }
 
     juntarMensagens(mensagem) {
@@ -41,11 +41,11 @@ let mensagens = [
     {"11949838238": {texto: "tudo bem?", data: "_formato_time_stamp"}},
     {"11949838238": {texto: "Gostaria de trabalhar para você", data: "_formato_time_stamp"}}, // últimas mensagens
 ];
-
+        
 let emEspera = []; // se o telefone está aqui é porque o objeto desse telefone já foi criado.
 let objetos = [];
 let aResponder = [];
-
+        
 async function iniciarInteracao() {
     while (true) {
         // Espera a entrada do usuário
@@ -58,6 +58,8 @@ async function iniciarInteracao() {
         // Converte a entrada em formato JSON
         try {
             let respostaJSON = JSON.parse(resposta);
+            
+            
             mensagens.push(respostaJSON);
         } catch (e) {
             console.log("Erro ao converter a mensagem em JSON:", e);
