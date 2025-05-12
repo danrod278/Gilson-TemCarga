@@ -1,4 +1,5 @@
 const readline = require('readline');
+const axios = require("axios");
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,25 +10,39 @@ class Conversa {
     constructor(telefone, mensagem) {
         this.telefone = telefone;
         this.mensagens = [mensagem];
+        this.contarTempo()
     }
 
     contarTempo() {
+        if(this.interval){
+            clearTimeout(this.interval)
+        }
+
         this.interval = setTimeout(() => {
             this.enviarParaServidor();
-        }, 1000 * 10);
+            
+        }, 1000 * 5);
     }
 
     juntarMensagens(mensagem) {
         try {
             this.mensagens.push(mensagem);
+            this.contarTempo()
         } catch (error) {
             console.error(error);
         }
-        clearTimeout(this.interval);
     }
 
-    enviarParaServidor() {
-        console.log("Enviando para o servidor", this.mensagens);
+    async enviarParaServidor() {
+        
+        const resposta = await axios.post("http://localhost:3000/api/recebemensagem", {mensagem:this.mensagens}, {
+            headers: {
+                'Content-Type': 'application/json'
+            }})
+        emEspera = emEspera.filter(numero=>{
+            return numero !== this.telefone
+        })
+        console.log(emEspera)
     }
 
     salvarNoBD(mensagem) {
@@ -36,26 +51,27 @@ class Conversa {
 }
 
 let mensagens = [
-    {"11949838238": {texto: "Oi", data: "_formato_time_stamp"}},
     {"119498385238": {texto: "Oi", data: "_formato_time_stam"}},
-    {"11949838238": {texto: "tudo bem?", data: "_formato_time_stamp"}},
+    {"11949838238": {texto: "Oi", data: "_formato_time_stamp"}},
+    {"11949838238": {texto: "tudo bem?", data: "_formao_time_stamp"}},
     {"11949838238": {texto: "Gostaria de trabalhar para você", data: "_formato_time_stamp"}}, // últimas mensagens
 ];
         
 let emEspera = []; // se o telefone está aqui é porque o objeto desse telefone já foi criado.
 let objetos = [];
 let aResponder = [];
-        
+let pacotes=[]
+let loop=true   
 async function iniciarInteracao() {
-    while (true) {
-        // Espera a entrada do usuário
+    while (loop) {
+        //Espera a entrada do usuário
         const resposta = await new Promise((resolve) => {
             rl.question('Digite a mensagem: ', (resposta) => {
                 resolve(resposta);
             });
         });
 
-        // Converte a entrada em formato JSON
+        // // // Converte a entrada em formato JSON
         try {
             let respostaJSON = JSON.parse(resposta);
             
@@ -102,6 +118,7 @@ async function iniciarInteracao() {
         console.log("Objetos:", objetos);
         console.log("Em Espera:", emEspera);
         console.log("Mensagens restantes:", mensagens);
+        loop=false
     }
 }
 
@@ -116,3 +133,10 @@ function apagaMensagemDoArray(mensagens, numero, data) {
 
 // Inicia a interação
 iniciarInteracao();
+
+function empacotador(telefone){
+    pacotes = pacotes.filter(obj=>{
+        const mensagem = obj[numero];
+        return !(mensagem && mensagem.data !== data);
+    })
+}

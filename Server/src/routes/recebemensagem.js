@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
+const {manipularmensagem} = require("../controllers/manipulamensagensController")
 
-router.post("/salvarImagem", /*desviar para o controller*/)
+router.post("/recebemensagem", manipularmensagem)
 
 module.exports = router

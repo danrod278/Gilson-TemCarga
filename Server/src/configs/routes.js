@@ -1,6 +1,6 @@
 const { verificarCookie } = require("../middlewares/verificarcookie")
-const imagens = require("../routes/imagens")
+const recebermensagem = require("../routes/recebemensagem")
 
 module.exports = (app)=>{
-    app.use('/api', verificarCookie, imagens)
+    app.use('/api', recebermensagem)
 }
