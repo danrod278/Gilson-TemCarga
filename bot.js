@@ -1,6 +1,7 @@
 const readline = require('readline');
 const axios = require("axios");
-const {v4: uuidv4} = require("uuid")
+const {v4: uuidv4} = require("uuid");
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -20,7 +21,7 @@ class Conversa {
         }
 
         this.interval = setTimeout(() => {
-            //this.enviarParaServidor();
+            this.enviarParaServidor();
             
         }, 1000 * 5);
     }
@@ -40,10 +41,10 @@ class Conversa {
             headers: {
                 'Content-Type': 'application/json'
             }})
-        emEspera = emEspera.filter(numero=>{
-            return numero !== this.telefone
+        emEspera = emEspera.filter(item=>{
+            return item[this.telefone] !== this.idPacote
         })
-        console.log(emEspera)
+        
     }
 
     salvarNoBD(mensagem) {
@@ -57,7 +58,7 @@ let mensagens = [
     {"11949838238": {texto: "tudo bem?", data: "_formao_time_stamp"}},
     {"11949838238": {texto: "Gostaria de trabalhar para você", data: "_formato_time_stamp"}}, // últimas mensagens
 ];
-        
+         
 let emEspera = []; // se o telefone está aqui é porque o objeto desse telefone já foi criado.
 let objetos = [];
 let aResponder = [];
@@ -93,7 +94,9 @@ async function iniciarInteracao() {
                     // adicionar mais uma mensagem ao objeto
                     objetos.forEach(objeto => {
                         try {
-                            if (objeto.telefone == telefone) {
+                            //console.log("?Em espera", emEspera[i][telefone]);
+                            
+                            if (objeto.idPacote == emEspera[i][telefone]/*Em espera é um array */) {
                                 objeto.juntarMensagens(mensagem[telefone].texto);
                             }
                         } catch (error) {
@@ -109,17 +112,18 @@ async function iniciarInteracao() {
             // Caso o telefone não exista, cria um novo objeto
             if (!existe) {
                 const newPacote = empacotador(mensagem)
+                console.log("idPacote", newPacote[telefone]);
+                
                 emEspera.push(newPacote)
-                objetos.push(new Conversa(telefone, mensagem[telefone].texto), Object.keys(newPacote)[0]/*não chega nada*/);
+                objetos.push(new Conversa(telefone, mensagem[telefone].texto, newPacote[telefone])/*não chega nada*/);
                 mensagens = apagaMensagemDoArray(mensagens, telefone); // apaga a mensagem do array para não ser lida mais de uma vez
             }
         });
 
-        // Exibe os dados após o processamento
+        //Exibe os dados após o processamento
         console.log("Objetos:", objetos);
         console.log("Em Espera:", emEspera);
         console.log("Mensagens restantes:", mensagens);
-        loop=false
     }
 }
 
