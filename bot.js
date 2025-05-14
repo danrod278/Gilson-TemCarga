@@ -1,15 +1,16 @@
 const readline = require('readline');
 const axios = require("axios");
-
+const {v4: uuidv4} = require("uuid")
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
 class Conversa {
-    constructor(telefone, mensagem) {
+    constructor(telefone, mensagem, idPacote) {
         this.telefone = telefone;
         this.mensagens = [mensagem];
+        this.idPacote = idPacote
         this.contarTempo()
     }
 
@@ -19,7 +20,7 @@ class Conversa {
         }
 
         this.interval = setTimeout(() => {
-            this.enviarParaServidor();
+            //this.enviarParaServidor();
             
         }, 1000 * 5);
     }
@@ -75,7 +76,6 @@ async function iniciarInteracao() {
         try {
             let respostaJSON = JSON.parse(resposta);
             
-            
             mensagens.push(respostaJSON);
         } catch (e) {
             console.log("Erro ao converter a mensagem em JSON:", e);
@@ -88,7 +88,7 @@ async function iniciarInteracao() {
 
             let existe = false;
             for (let i = 0; i < emEspera.length; i++) {
-                if (emEspera[i] == telefone) { // verifica se o objeto já foi criado
+                if (Object.keys(emEspera[i])[0] == telefone) { // verifica se o objeto já foi criado
                     existe = true;
                     // adicionar mais uma mensagem ao objeto
                     objetos.forEach(objeto => {
@@ -108,9 +108,10 @@ async function iniciarInteracao() {
 
             // Caso o telefone não exista, cria um novo objeto
             if (!existe) {
-                objetos.push(new Conversa(telefone, mensagem[telefone].texto));
+                const newPacote = empacotador(mensagem)
+                emEspera.push(newPacote)
+                objetos.push(new Conversa(telefone, mensagem[telefone].texto), Object.keys(newPacote)[0]/*não chega nada*/);
                 mensagens = apagaMensagemDoArray(mensagens, telefone); // apaga a mensagem do array para não ser lida mais de uma vez
-                emEspera.push(telefone);
             }
         });
 
@@ -134,9 +135,9 @@ function apagaMensagemDoArray(mensagens, numero, data) {
 // Inicia a interação
 iniciarInteracao();
 
-function empacotador(telefone){
-    pacotes = pacotes.filter(obj=>{
-        const mensagem = obj[numero];
-        return !(mensagem && mensagem.data !== data);
-    })
+function empacotador(mensagem){
+    let nMsg ={}
+    const telefone = Object.keys(mensagem)[0];
+    nMsg[telefone]=uuidv4()
+    return nMsg
 }
