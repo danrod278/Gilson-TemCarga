@@ -23,7 +23,7 @@ class Conversa {
         this.interval = setTimeout(() => {
             this.enviarParaServidor();
             
-        }, 1000 * 5);
+        }, 1000 * 10);
     }
 
     juntarMensagens(mensagem) {
@@ -37,13 +37,14 @@ class Conversa {
 
     async enviarParaServidor() {
         
-        const resposta = await axios.post("http://localhost:3000/api/recebemensagem", {mensagem:this.mensagens}, {
-            headers: {
-                'Content-Type': 'application/json'
-            }})
         emEspera = emEspera.filter(item=>{
             return item[this.telefone] !== this.idPacote
         })
+        
+        const resposta = await axios.post("http://localhost:3000/api/recebemensagem", {mensagem:this.mensagens, emEspera:emEspera}, {
+            headers: {
+                'Content-Type': 'application/json'
+            }})
         
     }
 
@@ -53,16 +54,15 @@ class Conversa {
 }
 
 let mensagens = [
-    {"119498385238": {texto: "Oi", data: "_formato_time_stam"}},
+    /*{"119498385238": {texto: "Oi", data: "_formato_time_stam"}},
     {"11949838238": {texto: "Oi", data: "_formato_time_stamp"}},
     {"11949838238": {texto: "tudo bem?", data: "_formao_time_stamp"}},
-    {"11949838238": {texto: "Gostaria de trabalhar para você", data: "_formato_time_stamp"}}, // últimas mensagens
+    {"11949838238": {texto: "Gostaria de trabalhar para você", data: "_format5o_time_stamp"}}, // últimas mensagens*/
 ];
          
 let emEspera = []; // se o telefone está aqui é porque o objeto desse telefone já foi criado.
 let objetos = [];
-let aResponder = [];
-let pacotes=[]
+
 let loop=true   
 async function iniciarInteracao() {
     while (loop) {
@@ -73,14 +73,14 @@ async function iniciarInteracao() {
             });
         });
 
-        // // // Converte a entrada em formato JSON
+        //  Converte a entrada em formato JSON
         try {
             let respostaJSON = JSON.parse(resposta);
             
             mensagens.push(respostaJSON);
         } catch (e) {
             console.log("Erro ao converter a mensagem em JSON:", e);
-            continue;
+            //continue;
         }
 
         // Processa as mensagens
@@ -94,7 +94,7 @@ async function iniciarInteracao() {
                     // adicionar mais uma mensagem ao objeto
                     objetos.forEach(objeto => {
                         try {
-                            //console.log("?Em espera", emEspera[i][telefone]);
+                            
                             
                             if (objeto.idPacote == emEspera[i][telefone]/*Em espera é um array */) {
                                 objeto.juntarMensagens(mensagem[telefone].texto);
@@ -116,14 +116,15 @@ async function iniciarInteracao() {
                 
                 emEspera.push(newPacote)
                 objetos.push(new Conversa(telefone, mensagem[telefone].texto, newPacote[telefone])/*não chega nada*/);
-                mensagens = apagaMensagemDoArray(mensagens, telefone); // apaga a mensagem do array para não ser lida mais de uma vez
+                
+                mensagens = apagaMensagemDoArray(mensagens, telefone, mensagem[telefone].data); // apaga a mensagem do array para não ser lida mais de uma vez
             }
         });
-
+        
         //Exibe os dados após o processamento
-        console.log("Objetos:", objetos);
-        console.log("Em Espera:", emEspera);
+        //console.log("Objetos:", objetos);
         console.log("Mensagens restantes:", mensagens);
+        
     }
 }
 
@@ -131,7 +132,7 @@ async function iniciarInteracao() {
 function apagaMensagemDoArray(mensagens, numero, data) {
     let nMensagens = mensagens.filter(obj => {
         const mensagem = obj[numero];
-        return !(mensagem && mensagem.data !== data);
+        return !(mensagem && mensagem.data === data);
     });
     return nMensagens;
 }

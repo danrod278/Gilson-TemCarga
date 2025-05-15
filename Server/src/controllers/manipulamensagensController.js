@@ -1,4 +1,4 @@
 exports.manipularmensagem = async (req, res)=>{
-    const {mensagem} = req.body
-    console.log(mensagem)
+    const body = req.body
+    console.log(body)
 }
